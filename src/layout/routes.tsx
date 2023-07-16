@@ -15,7 +15,8 @@ export const routes = Object.keys(PageModules)
     }
     return {
       path: paths.join('/') || '/',
-      lazy: PageModules[item]
+      lazy: PageModules[item],
+      // errorElement: <ErrorBoundary />
     }
   })
   .filter(
