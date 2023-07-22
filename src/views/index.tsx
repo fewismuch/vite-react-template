@@ -12,7 +12,7 @@ const Page = () => {
   const access = useAccess()
 
   return (
-    <div className='w-full h-[100vh]'>
+    <div className='w-full'>
       index {t('welcome')}
       <Button onClick={() => navigate('/about', { state: { id: 1 } })}>about</Button>
       <Button onClick={() => navigate('/user/setting')}>user/setting</Button>
