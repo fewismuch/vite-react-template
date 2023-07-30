@@ -11,4 +11,4 @@ const Page = () => {
 }
 Page.displayName = 'setting2Page'
 
-export const Component = Page
+export default Page

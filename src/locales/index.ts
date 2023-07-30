@@ -28,6 +28,8 @@ export const initI18n = () => {
   })
 }
 
+if(import.meta.env.ENABLE_I18N) initI18n()
+
 export const changeLanguage = (lang: Language) => {
   i18n.changeLanguage(lang)
 }
@@ -39,5 +41,5 @@ export const getAllLocales = () => {
 }
 
 export const getLocale = () => {
-  return ''
+  return i18n.language
 }

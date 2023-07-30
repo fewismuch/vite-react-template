@@ -257,4 +257,4 @@ const Page = () => {
   )
 }
 
-export const Component = Page
+export default Page
