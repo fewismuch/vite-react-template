@@ -4,6 +4,7 @@ import en_index from '@/locales/en-US/index.json'
 import en_about from '@/locales/en-US/about.json'
 import zh_index from '@/locales/zh-CN/index.json'
 import zh_about from '@/locales/zh-CN/about.json'
+import config from '@/config.ts'
 
 type Language = 'en-US' | 'zh-CN'
 
@@ -28,7 +29,7 @@ export const initI18n = () => {
   })
 }
 
-if(import.meta.env.ENABLE_I18N) initI18n()
+if (config.ENABLE_I18N) initI18n()
 
 export const changeLanguage = (lang: Language) => {
   i18n.changeLanguage(lang)

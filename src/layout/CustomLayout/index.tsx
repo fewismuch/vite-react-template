@@ -1,19 +1,13 @@
-import {
-  GithubFilled,
-  InfoCircleFilled,
-  QuestionCircleFilled,
-  RedoOutlined
-} from '@ant-design/icons'
+import React from 'react'
+import { GithubFilled, InfoCircleFilled, QuestionCircleFilled } from '@ant-design/icons'
 import type { ProSettings } from '@ant-design/pro-components'
 import { ProConfigProvider, ProLayout } from '@ant-design/pro-components'
-import React from 'react'
 import defaultProps from './_defaultProps'
 import { AvatarButton } from '@/layout/Avatar'
 import { MenuSearchInput } from '@/layout/MenuSearchInput'
 import { MultiTabs } from '../MultiTabs'
-import { useMenus } from '@/hooks/useMenus'
 import { KeepAlive, AliveScope, useAliveController } from 'react-activation'
-import { Dropdown, MenuProps } from 'antd'
+import { useLocation } from 'react-router-dom'
 
 interface Props {
   children?: React.ReactNode
@@ -28,49 +22,18 @@ const settings: Partial<ProSettings> = {
 
 export const CustomLayout = (props: Props) => {
   const { children } = props
-  //const [pathname, setPathname] = useState('/')
-  const { tabsItems, addTab, activeTabsItem } = useMenus()
-  const { refreshScope } = useAliveController()
-
-  const items: MenuProps['items'] = [
-    {
-      label: '1st menu item',
-      key: '1'
-    },
-    {
-      label: '2nd menu item',
-      key: '2'
-    },
-    {
-      label: '3rd menu item',
-      key: '3'
-    }
-  ]
-
-  const newTabsItems = (tabs: any) => {
-    return tabs.map((item: any) => {
-      return {
-        ...item,
-        label: (
-          <>
-            <Dropdown menu={{ items }} trigger={['contextMenu']}>
-              <span>{item.label}</span>
-            </Dropdown>
-            {activeTabsItem === item.key && <RedoOutlined onClick={() => refreshScope(item.key)} />}
-          </>
-        ),
-        closable: item.key !== '/'
-      }
-    })
-  }
-
+  let location = useLocation()
   return (
     <div className='h-[100vh]'>
       <ProConfigProvider dark={false}>
         <ProLayout
           {...defaultProps}
+          route={{
+            path: '/',
+            routes: {}
+          }}
           location={{
-            pathname: activeTabsItem
+            pathname: location.pathname
           }}
           menu={{
             type: undefined
@@ -97,7 +60,8 @@ export const CustomLayout = (props: Props) => {
                 //setPathname(item.path || '/')
                 //navigate(item.path||'/')
                 // 向multiTabs中添加记录
-                addTab(item.path || '/')
+                //addTab(item.path || '/')
+                console.log(item)
               }}
             >
               {dom}
@@ -105,17 +69,13 @@ export const CustomLayout = (props: Props) => {
           )}
           {...settings}
         >
-          <MultiTabs
-            items={newTabsItems(tabsItems)}
-            activeKey={activeTabsItem}
-            onChange={path => addTab(path)}
-          ></MultiTabs>
-          {JSON.stringify(newTabsItems)}
+          <MultiTabs />
+
           <AliveScope>
             <KeepAlive
               when={true}
-              name={activeTabsItem}
-              id={activeTabsItem}
+              name={location.pathname}
+              id={location.pathname}
               saveScrollPosition='screen'
             >
               {children}

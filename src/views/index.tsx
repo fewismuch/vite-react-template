@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router-dom'
-//import { prefetchPageModule } from '@/layout/routes'
+//import { prefetchPage } from '@/layout/routes'
 import { Button } from 'antd'
 
 const Page = () => {
-  //prefetchPageModule(['/about', '/user/setting'])
+  //prefetchPage(['/about', '/user/setting'])
   const navigate = useNavigate()
 
   return (
@@ -11,7 +11,7 @@ const Page = () => {
       <Button onClick={() => navigate('/about', { state: { id: 1 } })}>about</Button>
       <Button onClick={() => navigate('/user/setting')}>user/setting</Button>
       <Button onClick={() => navigate('/user/setting2')}>setting2</Button>
-      <div className='ty'>tianyu</div>
+      <Button onClick={() => navigate('/user/abc')}>dync</Button>
     </div>
   )
 }

@@ -1,64 +1,76 @@
 import { createHashRouter, RouteObject } from 'react-router-dom'
 import Layout from '@/layout/index.tsx'
-import NoMatch from '@/views/NoMatch.tsx'
+import Page404 from '@/views/_404.tsx'
 import { ComponentType, lazy, Suspense } from 'react'
 import { PageLoading } from '@/components/PageLoading.tsx'
+import { set } from 'lodash'
 
-//生成约定式路由
-export const PageModules = import.meta.glob(['../views/**/*.tsx', '../views/**/*.jsx'])
-
-function retry(componentImport: any, retryLeft: any) {
-  return new Promise(resolve => {
-    componentImport()
-      .then(resolve)
-      .catch((e: any) => {
-        if (retryLeft > 1) {
-          // 尝试重新加载
-          retry(componentImport, retryLeft - 1).then(resolve)
-        } else {
-          // 上报错误日志
-          console.error('资源加载失败', e)
-          return
-        }
-      })
-  }) as Promise<{ default: ComponentType } | any>
+function wrapSuspense(importer: () => Promise<{ default: ComponentType } | any>) {
+  if (!importer) return undefined
+  const Component = lazy(importer)
+  return (
+    <Suspense fallback={<PageLoading />}>
+      <Component />
+    </Suspense>
+  )
 }
 
-function lazyRetry(componentImport: any, retryLeft = 3) {
-  return lazy(() => retry(componentImport, retryLeft))
-}
+const generatePathConfig = () => {
+  //生成约定式路由
+  const PageModules = import.meta.glob(['/src/views/**/*.tsx', '/src/views/**/*.jsx'])
+  const pathConfig = {}
+  Object.keys(PageModules).forEach(item => {
+    const tempPaths = item
+      .replace('/src/views', '')
+      .replace('/index.tsx', '')
+      .replace('/index.jsx', '')
+      // $id文件名转成 :id动态路由
+      .replace('$', ':')
+    const paths = tempPaths ? tempPaths.split('/').filter(p => p) : '/'
 
-// TODO 缺少路由层级
-export const routes = Object.keys(PageModules)
-  .map(item => {
-    const paths = item.replace('../views', '').replace('/index.tsx', '').split('/')
-    function wrapSuspense(importer: () => Promise<{ default: ComponentType } | any>) {
-      if (!importer()) return undefined
-      const Component = lazyRetry(importer)
-      return (
-        <Suspense fallback={<PageLoading />}>
-          <Component />
-        </Suspense>
-      )
-    }
-    return {
-      //name: last(paths),
-      path: paths.join('/') || '/',
-      //lazy: PageModules[item],
-      element: wrapSuspense(PageModules[item])
-      // errorElement: <ErrorBoundary />
+    if (
+      (item.includes('.tsx') || item.includes('.jsx')) &&
+      !item.includes('/components/') &&
+      !item.includes('/component/')
+    ) {
+      set(pathConfig, paths, PageModules[item])
     }
   })
-  .filter(
-    item =>
-      !item.path.includes('.tsx') &&
-      !item.path.includes('/components/') &&
-      !item.path.includes('/component/')
-  ) as RouteObject[]
+  return pathConfig
+}
 
-export const prefetchPageModule = (prefetchPath: string | string[]) => {
+const mapPathConfigToRoute = cfg => {
+  // route 的子节点为数组
+  return Object.entries(cfg).map(([routePath, child]) => {
+    // () => import() 语法判断
+    if (typeof child === 'function') {
+      return {
+        // 等于 index 则映射为当前根路由
+        path: routePath === 'index' ? '/' : routePath,
+        // 转换为组件
+        element: wrapSuspense(child)
+        //errorElement: <ErrorBoundary />
+      }
+    }
+    // 否则为目录，则查找下一层级
+    return {
+      path: routePath,
+      // 递归 children
+      children: mapPathConfigToRoute(child)
+    }
+  })
+}
+
+const generateRouteConfig = () => {
+  const pathConfig = generatePathConfig()
+  return mapPathConfigToRoute(pathConfig)
+}
+
+export const routes = generateRouteConfig()
+
+export const prefetchPage = (prefetchPath: string | string[]) => {
   const pathModules: Record<string, any> = routes
-
+  // 嵌套路由的路径没处理
   pathModules.forEach((item: { path: string; lazy: any }) => {
     if (Array.isArray(prefetchPath)) {
       if (prefetchPath.includes(item.path)) item.lazy?.()
@@ -76,7 +88,7 @@ const router = createHashRouter([
       ...routes,
       {
         path: '*',
-        element: <NoMatch />
+        element: <Page404 />
       }
     ]
   }
