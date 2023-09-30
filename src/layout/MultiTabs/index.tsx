@@ -1,24 +1,17 @@
 import { Button, Dropdown, MenuProps, Tabs } from 'antd'
 import { MoreOutlined } from '@ant-design/icons'
-import { useLocation } from 'react-router-dom'
-import React, { useState } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { useAliveController } from 'react-activation'
 import { RedoOutlined } from '@ant-design/icons'
-
-interface Props {
-  onChange: (key: string) => void
-}
+import { MenusStore } from '@/layout/MenusStore'
+import { useSnapshot } from 'valtio'
+import { useNavigate } from '@/hooks/useNavigate'
 
 // TODO tab和菜单也要国际化
-export const MultiTabs: React.FC<Props> = props => {
-  const { onChange } = props
-  const [activeKey, setActiveKey] = useState('/')
-  let location = useLocation()
+export const MultiTabs: React.FC = () => {
+  const { menus, activedMenu, activedMenus, fetchMenus } = useSnapshot(MenusStore)
   const { refreshScope } = useAliveController()
-
-  React.useEffect(() => {
-    setActiveKey(location.pathname)
-  }, [location])
+  const navigate = useNavigate()
 
   const dropdownItems: MenuProps['items'] = [
     {
@@ -54,24 +47,25 @@ export const MultiTabs: React.FC<Props> = props => {
     }
   ]
 
-  const newTabsItems = (tabs: any) => {
-    return tabs.map((item: any) => {
-      return {
-        ...item,
-        label: (
-          <>
-            <Dropdown menu={{ items: dropdownMenus }} trigger={['contextMenu']}>
-              <span>{item.label}</span>
-            </Dropdown>
-            {location.pathname === item.key && (
-              <RedoOutlined onClick={() => refreshScope(item.key)} />
-            )}
-          </>
-        ),
-        closable: item.key !== '/'
-      }
-    })
-  }
+  const tabsItems = useMemo(
+    (tabs: any) => {
+      return activedMenus.map((item: any) => {
+        return {
+          ...item,
+          label: (
+            <>
+              <Dropdown menu={{ items: dropdownMenus }} trigger={['contextMenu']}>
+                <span>{item.label || item.name}</span>
+              </Dropdown>
+              {activedMenu === item.key && <RedoOutlined onClick={() => refreshScope(item.key)} />}
+            </>
+          ),
+          closable: item.key !== '/'
+        }
+      })
+    },
+    [activedMenus]
+  )
 
   const onEdit = (
     targetKey: React.MouseEvent | React.KeyboardEvent | string,
@@ -80,18 +74,27 @@ export const MultiTabs: React.FC<Props> = props => {
     if (action === 'add') {
       //add()
     } else {
+      console.log('targetKey', targetKey)
       //remove(targetKey)
     }
   }
+
+  const onChange = path => {
+    navigate(path)
+  }
+
+  useEffect(() => {
+    fetchMenus()
+  }, [])
 
   return (
     <Tabs
       hideAdd
       onChange={onChange}
       onEdit={onEdit}
-      activeKey={activeKey}
+      activeKey={activedMenu}
       type='editable-card'
-      items={[]}
+      items={tabsItems}
       className='multi-tabs'
       tabBarExtraContent={tabBarExtraContent}
     />

@@ -1,29 +1,11 @@
-import { useEffect, useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { useMenus } from '../models/useMenus'
+import { MenusStore } from '@/layout/MenusStore'
+import { useSnapshot } from 'valtio'
 
 export const useMenus = () => {
-  const { menus, loading } = useMenus()
-  const [tabsItems, setTabsItems] = useState<any>([])
-  const [activeTabsItem, setActiveTabsItem] = useState('')
-
-  const navigate = useNavigate()
-  const location = useLocation()
-
-  const routeToTab = (route: any) => {
-    return {
-      key: route.path,
-      label: route.name
-    }
-  }
-
-  const addTab = (path: string, toPath = true) => {}
-
-  const deleteTab = (path: string) => {}
+  const { menus, addMenu } = useSnapshot(MenusStore)
 
   return {
-    tabsItems,
-    activeTabsItem,
-    addTab
+    menus,
+    addMenu
   }
 }

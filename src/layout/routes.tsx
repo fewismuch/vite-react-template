@@ -66,7 +66,21 @@ const generateRouteConfig = () => {
   return mapPathConfigToRoute(pathConfig)
 }
 
-export const routes = generateRouteConfig()
+export const generateRoute = () => {
+  return createHashRouter([
+    {
+      path: '/',
+      Component: Layout,
+      children: [
+        ...generateRouteConfig(),
+        {
+          path: '*',
+          element: <Page404 />
+        }
+      ]
+    }
+  ])
+}
 
 export const prefetchPage = (prefetchPath: string | string[]) => {
   const pathModules: Record<string, any> = routes
@@ -80,17 +94,6 @@ export const prefetchPage = (prefetchPath: string | string[]) => {
   })
 }
 
-const router = createHashRouter([
-  {
-    path: '/',
-    Component: Layout,
-    children: [
-      ...routes,
-      {
-        path: '*',
-        element: <Page404 />
-      }
-    ]
-  }
-])
+const router = generateRoute()
+
 export default router

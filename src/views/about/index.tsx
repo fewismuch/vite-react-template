@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from '@/hooks/useNavigate'
 import { Header } from './components/Header'
 import { Button } from 'antd'
 

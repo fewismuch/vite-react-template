@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { GithubFilled, InfoCircleFilled, QuestionCircleFilled } from '@ant-design/icons'
 import type { ProSettings } from '@ant-design/pro-components'
 import { ProConfigProvider, ProLayout } from '@ant-design/pro-components'
@@ -7,7 +7,9 @@ import { AvatarButton } from '@/layout/Avatar'
 import { MenuSearchInput } from '@/layout/MenuSearchInput'
 import { MultiTabs } from '../MultiTabs'
 import { KeepAlive, AliveScope, useAliveController } from 'react-activation'
-import { useLocation } from 'react-router-dom'
+import { useNavigate } from '@/hooks/useNavigate'
+import { MenusStore } from '@/layout/MenusStore'
+import { useSnapshot } from 'valtio'
 
 interface Props {
   children?: React.ReactNode
@@ -22,7 +24,9 @@ const settings: Partial<ProSettings> = {
 
 export const CustomLayout = (props: Props) => {
   const { children } = props
-  let location = useLocation()
+  const { menus, activedMenu } = useSnapshot(MenusStore)
+  const navigate = useNavigate()
+
   return (
     <div className='h-[100vh]'>
       <ProConfigProvider dark={false}>
@@ -30,10 +34,10 @@ export const CustomLayout = (props: Props) => {
           {...defaultProps}
           route={{
             path: '/',
-            routes: {}
+            routes: menus
           }}
           location={{
-            pathname: location.pathname
+            pathname: activedMenu
           }}
           menu={{
             type: undefined
@@ -57,11 +61,7 @@ export const CustomLayout = (props: Props) => {
           menuItemRender={(item, dom) => (
             <a
               onClick={() => {
-                //setPathname(item.path || '/')
-                //navigate(item.path||'/')
-                // 向multiTabs中添加记录
-                //addTab(item.path || '/')
-                console.log(item)
+                navigate(item.path || '/')
               }}
             >
               {dom}
@@ -72,12 +72,7 @@ export const CustomLayout = (props: Props) => {
           <MultiTabs />
 
           <AliveScope>
-            <KeepAlive
-              when={true}
-              name={location.pathname}
-              id={location.pathname}
-              saveScrollPosition='screen'
-            >
+            <KeepAlive when={true} name={activedMenu} id={activedMenu} saveScrollPosition='screen'>
               {children}
             </KeepAlive>
           </AliveScope>

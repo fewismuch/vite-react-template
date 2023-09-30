@@ -5,16 +5,17 @@ export const fetchMenus = (): Promise<string> => {
       name: 'home'
     },
     {
-      path: '/about',
-      name: 'about'
-    },
-    {
       path: '/dashboard',
       name: 'dashboard'
     },
     {
+      path: '/about',
+      name: 'about'
+    },
+    {
       path: '/user',
       name: 'user',
+      access: 'canAdmin',
       routes: [
         {
           path: '/user/setting',
